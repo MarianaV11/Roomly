@@ -1,6 +1,6 @@
 import redis.asyncio as redis
 
-from backend.app.core import get_config
+from app.core import get_config
 
 
 def get_redis_client() -> redis.Redis:

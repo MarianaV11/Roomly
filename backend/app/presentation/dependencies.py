@@ -1,6 +1,6 @@
-from application.auth_service import AuthService
-from infrastructure.database.repositories import DbUserRepository
-from infrastructure.database.database import get_db_session
+from app.application.auth_service import AuthService
+from app.infrastructure.database.repositories import DbUserRepository
+from app.infrastructure.database.database import get_db_session
 from fastapi import Depends
 
 

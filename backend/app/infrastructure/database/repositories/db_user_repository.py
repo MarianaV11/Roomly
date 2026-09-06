@@ -1,6 +1,6 @@
-from domain.entities.user import User, UserRead
-from domain.ports import UserRepository
-from models import User as UserModel
+from app.domain.entities.user import User, UserRead
+from app.domain.ports import UserRepository
+from app.infrastructure.database.models import User as UserModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

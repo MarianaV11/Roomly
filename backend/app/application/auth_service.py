@@ -1,6 +1,6 @@
-from core import Config, get_config
-from domain.entities.user import User, UserRead
-from domain.ports import UserRepository
+from app.core import Config, get_config
+from app.domain.entities.user import User, UserRead
+from app.domain.ports import UserRepository
 
 
 class AuthService:
