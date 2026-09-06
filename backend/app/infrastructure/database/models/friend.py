@@ -11,10 +11,16 @@ class Friend(Base):
     created_at = Column(DateTime, nullable=False, default=func.now())
 
     user_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE", nullable=False, index=True)
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     friend_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE", nullable=False, index=True)
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
 
     user = relationship("User", foreign_keys=[user_id], back_populates="friends")
