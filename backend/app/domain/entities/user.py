@@ -1,15 +1,12 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
+from datetime import datetime
 
 
-class User(BaseModel):
+@dataclass
+class User:
     name: str
     email: str
-    password: str
+    password_hash: str
 
-
-class UserRead(User):
-    id: int
-    created_at: str
-
-    class Config:
-        orm_mode = True
+    id: int | None = None
+    created_at: datetime | None = None

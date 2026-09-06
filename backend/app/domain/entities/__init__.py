@@ -1,3 +1,3 @@
-from app.domain.entities.user import User, UserRead
+from app.domain.entities.user import User
 
-__all__ = ["User", "UserRead"]
+__all__ = ["User"]

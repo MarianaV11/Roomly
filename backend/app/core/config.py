@@ -1,5 +1,6 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Config(BaseSettings):
@@ -11,8 +12,12 @@ class Config(BaseSettings):
 
     jwt_secret_key: str
     jwt_algorithm: str
-    
+    jwt_access_token_expire_minutes: int = 60
+
+    cors_origins: list[str] = ["http://localhost:3000"]
+
     echo: bool = True
+
 
 @lru_cache
 def get_config() -> Config:
