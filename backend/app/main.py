@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core import get_config
 from app.presentation.auth_router import router as auth_router
 from app.presentation.error_handlers import register_error_handlers
+from app.presentation.user_router import router as user_router
 
 
 def create_app() -> FastAPI:
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
     register_error_handlers(app)
 
     app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+    app.include_router(user_router, prefix="/api/user", tags=["User"])
 
     return app
 
@@ -36,4 +38,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=9000)

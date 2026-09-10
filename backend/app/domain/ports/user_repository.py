@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from app.domain.entities.general_responses import GeneralResponse
 from app.domain.entities.user import User
 
 
@@ -12,3 +13,6 @@ class UserRepository(ABC):
 
     @abstractmethod
     async def get_user_by_email(self, email: str) -> User | None: ...
+
+    @abstractmethod
+    async def delete_user(self, user_id: int) -> GeneralResponse | None: ...

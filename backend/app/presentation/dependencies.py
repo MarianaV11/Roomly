@@ -2,6 +2,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.auth_service import AuthService
+from app.application.user_service import UserService
 from app.core import Config, get_config
 from app.infrastructure.database.database import get_db_session
 from app.infrastructure.database.repositories import DbUserRepository
@@ -20,4 +21,13 @@ def get_auth_service(
             algorithm=config.jwt_algorithm,
             expire_minutes=config.jwt_access_token_expire_minutes,
         ),
+    )
+
+
+def get_user_service(
+    session: AsyncSession = Depends(get_db_session),
+    config: Config = Depends(get_config),
+) -> UserService:
+    return UserService(
+        user_repository=DbUserRepository(session=session),
     )

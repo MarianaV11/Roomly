@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.entities.general_responses import GeneralResponse
 from app.domain.entities.user import User
 from app.domain.ports import UserRepository
 from app.infrastructure.database.models import User as UserModel
@@ -37,6 +38,21 @@ class DbUserRepository(UserRepository):
         )
 
         return self._to_entity_or_none(result.scalar_one_or_none())
+
+    async def delete_user(self, user_id: int) -> GeneralResponse | None:
+        result = await self._session.execute(
+            select(UserModel).where(UserModel.id == user_id)
+        )
+
+        if not result:
+            return None
+
+        await self._session.delete(result.scalar_one())
+        await self._session.commit()
+
+        return GeneralResponse(
+            status_code=200, message=f"User with id {user_id} deleted successfully."
+        )
 
     @staticmethod
     def _to_entity(model: UserModel) -> User:
