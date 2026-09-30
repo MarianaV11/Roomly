@@ -12,7 +12,7 @@ class UserService:
         user = await self._repository.get_user_by_id(user_id=user_id)
 
         if not user:
-            raise UserNotFound(user_id=user_id)
+            raise UserNotFound(identifier=user_id)
 
         return user
 
@@ -20,6 +20,6 @@ class UserService:
         response = await self._repository.delete_user(user_id=user_id)
 
         if not response:
-            raise UserNotFound(user_id=user_id)
+            raise UserNotFound(identifier=user_id)
 
         return response

@@ -46,7 +46,7 @@ class AuthService:
     async def get_current_user(self, token: str) -> User:
         subject = self._token_provider.read_subject(token=token)
 
-        if subject is None or subject.isdigit():
+        if subject is None or not subject.isdigit():
             raise InvalidToken()
 
         user = await self._repository.get_user_by_id(int(subject))
