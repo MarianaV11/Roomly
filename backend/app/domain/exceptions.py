@@ -19,3 +19,8 @@ class UserNotFound(DomainError):
 class InvalidCredentials(DomainError):
     def __init__(self) -> None:
         super().__init__("Invalid email or password")
+
+
+class InvalidToken(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Invalid token")

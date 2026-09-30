@@ -6,12 +6,14 @@ from app.domain.exceptions import (
     EmailAlreadyRegistered,
     InvalidCredentials,
     UserNotFound,
+    InvalidToken,
 )
 
 STATUS_BY_ERROR = {
     EmailAlreadyRegistered: status.HTTP_409_CONFLICT,
     InvalidCredentials: status.HTTP_401_UNAUTHORIZED,
     UserNotFound: status.HTTP_404_NOT_FOUND,
+    InvalidToken: status.HTTP_401_UNAUTHORIZED,
 }
 
 

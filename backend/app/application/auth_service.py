@@ -1,5 +1,9 @@
 from app.domain.entities.user import User
-from app.domain.exceptions import EmailAlreadyRegistered, InvalidCredentials
+from app.domain.exceptions import (
+    EmailAlreadyRegistered,
+    InvalidCredentials,
+    InvalidToken,
+)
 from app.domain.ports import PasswordHasher, TokenProvider, UserRepository
 
 
@@ -38,3 +42,16 @@ class AuthService:
             raise InvalidCredentials()
 
         return self._token_provider.create_access_token(subject=str(user.id))
+
+    async def get_current_user(self, token: str) -> User:
+        subject = self._token_provider.read_subject(token=token)
+
+        if subject is None or subject.isdigit():
+            raise InvalidToken()
+
+        user = await self._repository.get_user_by_id(int(subject))
+
+        if user is None:
+            raise InvalidToken()
+
+        return user
