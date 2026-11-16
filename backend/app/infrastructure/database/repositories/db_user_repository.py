@@ -44,10 +44,12 @@ class DbUserRepository(UserRepository):
             select(UserModel).where(UserModel.id == user_id)
         )
 
-        if not result:
+        model = result.scalar_one_or_none()
+
+        if model is None:
             return None
 
-        await self._session.delete(result.scalar_one())
+        await self._session.delete(model)
         await self._session.commit()
 
         return GeneralResponse(
