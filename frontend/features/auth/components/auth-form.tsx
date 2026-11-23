@@ -67,7 +67,7 @@ function AuthCard(props: AuthCardProps) {
           )}
         </CardContent>
 
-        <CardFooter className="mt-4 flex flex-col gap-4">
+        <CardFooter className="mt-6 flex flex-col gap-6">
           <SubmitButton
             text={props.submitting ? "Aguarde…" : props.submitLabel}
             disabled={props.submitting}

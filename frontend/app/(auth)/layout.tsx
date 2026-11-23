@@ -77,7 +77,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </section>
 
       {/* ---- Form side ---- */}
-      <main className="flex items-center justify-center p-6">
+      <main className="flex items-center justify-center bg-linear-to-l from-primary/20 to-transparent to-50% p-6">
         <div className="flex w-full max-w-sm flex-col items-center gap-8">
           <Logo className="motion-safe:animate-in motion-safe:fade-in lg:hidden" />
           {children}
