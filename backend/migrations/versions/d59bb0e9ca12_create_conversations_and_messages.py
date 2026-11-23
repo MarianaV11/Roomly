@@ -1,7 +1,7 @@
 """create conversations and messages
 
 Revision ID: d59bb0e9ca12
-Revises: fc71e8392b17
+Revises: 691ef419df07
 Create Date: 2026-11-16 15:09:42.323751
 
 """
@@ -13,7 +13,9 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = 'd59bb0e9ca12'
-down_revision: Union[str, Sequence[str], None] = 'fc71e8392b17'
+# Was 'fc71e8392b17', a duplicate of 691ef419df07 (same users/friends schema)
+# created on another branch; the merge kept only one initial migration.
+down_revision: Union[str, Sequence[str], None] = '691ef419df07'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

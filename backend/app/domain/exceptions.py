@@ -21,6 +21,11 @@ class InvalidCredentials(DomainError):
         super().__init__("Invalid email or password")
 
 
+class InvalidToken(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Invalid token")
+
+
 class ConversationNotFound(DomainError):
     def __init__(self, conversation_id: int) -> None:
         self.conversation_id = conversation_id

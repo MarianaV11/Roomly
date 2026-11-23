@@ -1,14 +1,15 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.auth_service import AuthService
 from app.application.chat_service import ChatService
 from app.application.user_service import UserService
 from app.core import Config, get_config
+from app.domain.entities.user import User
 from app.domain.ports import SessionRepository, TokenProvider
 from app.infrastructure.database.database import SessionLocal, get_db_session
 from app.infrastructure.database.repositories import (
@@ -18,7 +19,10 @@ from app.infrastructure.database.repositories import (
 from app.infrastructure.redis import RedisSessionRepository, get_redis_client
 from app.infrastructure.security import Argon2PasswordHasher, JwtTokenProvider
 
-bearer = HTTPBearer()
+# Reads "Authorization: Bearer <token>". tokenUrl makes Swagger's "Authorize"
+# button log in through /api/auth/token. auto_error=False: a missing token
+# reaches get_current_user and becomes InvalidToken → 401, like a bad one.
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token", auto_error=False)
 
 
 def get_token_provider(config: Config = Depends(get_config)) -> TokenProvider:
@@ -27,22 +31,6 @@ def get_token_provider(config: Config = Depends(get_config)) -> TokenProvider:
         algorithm=config.jwt_algorithm,
         expire_minutes=config.jwt_access_token_expire_minutes,
     )
-
-
-def get_current_user_id(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer),
-    token_provider: TokenProvider = Depends(get_token_provider),
-) -> int:
-    subject = token_provider.read_subject(credentials.credentials)
-
-    if subject is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    return int(subject)
 
 
 def get_auth_service(
@@ -54,6 +42,18 @@ def get_auth_service(
         password_hasher=Argon2PasswordHasher(),
         token_provider=token_provider,
     )
+
+
+async def get_current_user(
+    token: str | None = Depends(oauth2_scheme),
+    auth_service: AuthService = Depends(get_auth_service),
+) -> User:
+    """The logged-in user. Also rejects tokens of users that were deleted."""
+    return await auth_service.get_current_user(token=token)
+
+
+async def get_current_user_id(user: User = Depends(get_current_user)) -> int:
+    return user.id
 
 
 def get_user_service(session: AsyncSession = Depends(get_db_session)) -> UserService:
