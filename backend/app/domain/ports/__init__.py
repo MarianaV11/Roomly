@@ -3,6 +3,7 @@ from app.domain.ports.token_provider import TokenProvider
 from app.domain.ports.user_repository import UserRepository
 from app.domain.ports.session_repository import SessionRepository
 from app.domain.ports.conversation_repository import ConversationRepository
+from app.domain.ports.friend_repository import FriendRepository
 
 __all__ = [
     "PasswordHasher",
@@ -10,4 +11,5 @@ __all__ = [
     "UserRepository",
     "SessionRepository",
     "ConversationRepository",
+    "FriendRepository",
 ]

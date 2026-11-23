@@ -94,11 +94,12 @@ Todas as rotas exigem login.
 | `POST /api/chat/conversations/groups` | Cria um grupo: `{"name": "Café", "member_ids": []}` (membros opcionais) |
 | `GET /api/chat/conversations/groups?search=café` | Busca grupos pelo nome (vazio = mais recentes) |
 | `POST /api/chat/conversations/{id}/join` | Entra num grupo |
+| `POST /api/chat/conversations/{id}/leave` | Sai de um grupo. Se você for o último membro, o grupo e as mensagens são apagados. DMs não podem ser deixadas. |
 | `POST /api/chat/conversations/{id}/members` | Adiciona pessoas a um grupo de que você participa: `{"member_ids": [3, 4]}` |
 | `GET /api/chat/conversations` | Lista as conversas do usuário logado |
 | `GET /api/chat/conversations/{id}/messages` | Últimas 50 mensagens. Para carregar as anteriores: `?before_id=<id da mais antiga>` |
 | `POST /api/chat/conversations/{id}/messages` | Envia `{"content": "..."}` |
-| `GET /api/chat/online?user_ids=1&user_ids=2` | Quais desses usuários estão online, por exemplo `[2]`. Só responde sobre contatos (quem divide uma conversa com você); até 100 ids. |
+| `GET /api/chat/online?user_ids=1&user_ids=2` | Quais desses usuários estão online, por exemplo `[2]`. Só responde sobre contatos (quem divide uma conversa com você ou é seu amigo); até 100 ids. |
 
 Para receber eventos em tempo real, o frontend abre um WebSocket. Navegadores não permitem cabeçalhos no WebSocket, por isso o token vai na URL:
 
@@ -109,13 +110,26 @@ ws.onmessage = (e) => {
   // "message"      → data = mensagem nova
   // "conversation" → data = conversa nova ou atualizada (alguém entrou/foi adicionado):
   //                  trate como "insere ou substitui" pelo id
-  // "presence"     → data = { user_id, online } quando um contato entra ou sai
+  // "conversation_removed" → data = { id } quando você sai de um grupo (avisa suas outras abas)
+  // "presence"     → data = { user_id, online } quando um contato (conversa ou amigo) entra ou sai
+  // "friends_changed" → data = null quando um pedido/amizade seu muda (recarregue GET /api/friends)
 };
 ```
 
 O envio continua sendo pelo `POST`. O WebSocket só entrega eventos.
 
 **Presença:** enquanto o WebSocket está aberto, o usuário fica online, numa chave `online:{id}` do Redis que expira em 60s e é renovada a cada 30s. Se o servidor cair, ninguém fica preso como online: a chave expira sozinha. O fluxo no frontend é chamar `GET /online` ao abrir a tela, para saber o estado inicial, e depois atualizar com os eventos `presence`.
+
+## Amizade
+
+Amizade funciona por pedido: quem recebe precisa aceitar. Há uma linha por par na tabela `friends` (`user_id` = quem pediu, `friend_id` = quem recebeu, `status` = `pending` ou `accepted`).
+
+| Rota | O que faz |
+| --- | --- |
+| `GET /api/friends` | Amigos e pedidos pendentes. Cada item traz `status`, `direction` (`incoming` = pediram para você, `outgoing` = você pediu) e `user` (a outra pessoa). |
+| `POST /api/friends` | Envia um pedido pelo e-mail: `{"email": "bia@email.com"}`. Se essa pessoa já tinha te pedido, vocês viram amigos na hora. Pedido repetido → 409. |
+| `POST /api/friends/{id}/accept` | Aceita um pedido recebido |
+| `DELETE /api/friends/{id}` | Recusa ou cancela um pedido, ou desfaz a amizade |
 
 ## Migrations
 

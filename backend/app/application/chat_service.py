@@ -1,6 +1,11 @@
 from app.domain.entities.conversation import Conversation, Message
 from app.domain.exceptions import ConversationNotFound, InvalidConversation, UserNotFound
-from app.domain.ports import ConversationRepository, SessionRepository, UserRepository
+from app.domain.ports import (
+    ConversationRepository,
+    FriendRepository,
+    SessionRepository,
+    UserRepository,
+)
 
 
 class ChatService:
@@ -9,10 +14,12 @@ class ChatService:
         conversation_repository: ConversationRepository,
         user_repository: UserRepository,
         session_repository: SessionRepository,
+        friend_repository: FriendRepository,
     ):
         self._conversations = conversation_repository
         self._users = user_repository
         self._sessions = session_repository
+        self._friends = friend_repository
 
     async def open_direct(self, user_id: int, other_id: int) -> Conversation:
         """The direct conversation between two people; reused if it already exists."""
@@ -85,8 +92,12 @@ class ChatService:
 
     async def list_contact_ids(self, user_id: int) -> list[int]:
         conversations = await self._conversations.list_user_conversations(user_id=user_id)
+        friendships = await self._friends.list_for_user(user_id=user_id)
 
-        return sorted({m for c in conversations for m in c.member_ids} - {user_id})
+        members = {m for c in conversations for m in c.member_ids}
+        friends = {f.other(user_id).id for f in friendships if f.status == "accepted"}
+
+        return sorted((members | friends) - {user_id})
 
     async def online_contacts(self, user_id: int, user_ids: list[int]) -> list[int]:
         contacts = set(await self.list_contact_ids(user_id))

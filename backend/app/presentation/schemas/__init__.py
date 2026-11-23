@@ -7,6 +7,7 @@ from app.presentation.schemas.chat import (
     MessageCreate,
     MessageResponse,
 )
+from app.presentation.schemas.friend import FriendRequestCreate, FriendshipResponse
 from app.presentation.schemas.user import UserCreate, UserResponse
 
 __all__ = [
@@ -18,6 +19,8 @@ __all__ = [
     "ConversationResponse",
     "MessageCreate",
     "MessageResponse",
+    "FriendRequestCreate",
+    "FriendshipResponse",
     "UserCreate",
     "UserResponse",
 ]

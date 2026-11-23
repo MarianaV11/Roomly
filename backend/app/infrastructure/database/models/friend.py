@@ -1,14 +1,25 @@
 from app.infrastructure.database.database import Base
-from sqlalchemy import Column, DateTime, ForeignKey, Integer
+from sqlalchemy import CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, String, func
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 
 
 class Friend(Base):
     __tablename__ = "friends"
+    __table_args__ = (
+        CheckConstraint("user_id <> friend_id", name="ck_friends_not_self"),
+        CheckConstraint("status IN ('pending', 'accepted')", name="ck_friends_status"),
+        # One row per pair, whichever direction the request went.
+        Index(
+            "uq_friends_pair",
+            func.least("user_id", "friend_id"),
+            func.greatest("user_id", "friend_id"),
+            unique=True,
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
+    status = Column(String(16), nullable=False, default="pending", server_default="pending")
 
     user_id = Column(
         Integer,

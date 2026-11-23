@@ -35,3 +35,19 @@ class ConversationNotFound(DomainError):
 
 class InvalidConversation(DomainError):
     pass
+
+
+class FriendshipNotFound(DomainError):
+    def __init__(self, friendship_id: int) -> None:
+        self.friendship_id = friendship_id
+
+        super().__init__(f"Friend request not found: {friendship_id}")
+
+
+class FriendshipAlreadyExists(DomainError):
+    def __init__(self) -> None:
+        super().__init__("You are already friends or a request is already pending")
+
+
+class InvalidFriendship(DomainError):
+    pass

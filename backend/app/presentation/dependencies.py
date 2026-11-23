@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.auth_service import AuthService
 from app.application.chat_service import ChatService
+from app.application.friend_service import FriendService
 from app.application.user_service import UserService
 from app.core import Config, get_config
 from app.domain.entities.user import User
@@ -14,6 +15,7 @@ from app.domain.ports import SessionRepository, TokenProvider
 from app.infrastructure.database.database import SessionLocal, get_db_session
 from app.infrastructure.database.repositories import (
     DbConversationRepository,
+    DbFriendRepository,
     DbUserRepository,
 )
 from app.infrastructure.redis import RedisSessionRepository, get_redis_client
@@ -60,6 +62,13 @@ def get_user_service(session: AsyncSession = Depends(get_db_session)) -> UserSer
     return UserService(user_repository=DbUserRepository(session=session))
 
 
+def get_friend_service(session: AsyncSession = Depends(get_db_session)) -> FriendService:
+    return FriendService(
+        friend_repository=DbFriendRepository(session=session),
+        user_repository=DbUserRepository(session=session),
+    )
+
+
 def get_session_repository() -> SessionRepository:
     return RedisSessionRepository(get_redis_client())
 
@@ -69,6 +78,7 @@ def _build_chat_service(session: AsyncSession) -> ChatService:
         conversation_repository=DbConversationRepository(session=session),
         user_repository=DbUserRepository(session=session),
         session_repository=get_session_repository(),
+        friend_repository=DbFriendRepository(session=session),
     )
 
 

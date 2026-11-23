@@ -4,6 +4,7 @@ import { RiArrowLeftLine, RiChat3Line, RiWifiOffLine } from "@remixicon/react";
 
 import { Button } from "@/components/ui/button";
 import { ExitButton } from "@/components/exit-button";
+import { useFriendsStore } from "@/features/friends";
 import { SettingsDialog } from "@/features/settings";
 import { UserAvatar } from "@/features/users";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ import { useChatStore } from "../store/chat.store";
 import { AddMembersDialog } from "./add-members-dialog";
 import { ConversationList } from "./conversation-list";
 import { ExploreGroupsDialog } from "./explore-groups-dialog";
+import { FriendsDialog } from "./friends-dialog";
 import { LeaveGroupDialog } from "./leave-group-dialog";
 import { MessageComposer } from "./message-composer";
 import { MessageList } from "./message-list";
@@ -34,6 +36,7 @@ export function ChatView({ token }: { token: string }) {
 
   function logout() {
     useChatStore.getState().reset();
+    useFriendsStore.getState().reset();
     useAuth.getState().clearAuth();
   }
 
@@ -57,6 +60,7 @@ export function ChatView({ token }: { token: string }) {
               </span>
             )}
           </div>
+          <FriendsDialog />
           <ExploreGroupsDialog />
           <NewConversationDialog />
           <div className="ml-1">
@@ -69,7 +73,7 @@ export function ChatView({ token }: { token: string }) {
         </nav>
 
         <footer className="border-t p-2">
-          <SettingsDialog />
+          <SettingsDialog me={me} onAccountDeleted={logout} />
         </footer>
       </aside>
 

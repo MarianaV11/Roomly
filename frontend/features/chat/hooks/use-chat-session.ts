@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 
+import { useFriendsStore } from "@/features/friends";
 import { getMe } from "@/features/users";
 
 import { listConversations, listOnline } from "../services/chat.service";
@@ -19,6 +20,7 @@ const onlineAmong = (contactKey: string) =>
 export function useChatSession(token: string) {
   const conversations = useChatStore((state) => state.conversations);
   const meId = useChatStore((state) => state.me?.id);
+  const friendships = useFriendsStore((state) => state.items);
 
   // ---- initial load (fresh store per login) --------------------------------
   useEffect(() => {
@@ -26,6 +28,8 @@ export function useChatSession(token: string) {
     let cancelled = false;
 
     store.reset();
+    useFriendsStore.getState().reset();
+    useFriendsStore.getState().load();
     Promise.all([getMe(), listConversations()])
       .then(([me, conversations]) => !cancelled && store.start(me, conversations))
       .catch(showError);
@@ -40,12 +44,13 @@ export function useChatSession(token: string) {
     useChatStore.getState().fetchMissingUsers();
   }, [conversations]);
 
-  // ---- presence: new contacts → ask who is online --------------------------
+  // ---- presence: new contacts (conversations or friends) → ask who is online
   const contactKey = useMemo(() => {
     const ids = new Set(conversations.flatMap((c) => c.member_ids));
+    for (const f of friendships) if (f.status === "accepted") ids.add(f.user.id);
     if (meId !== undefined) ids.delete(meId);
     return [...ids].sort((a, b) => a - b).join(",");
-  }, [conversations, meId]);
+  }, [conversations, friendships, meId]);
 
   useEffect(() => {
     if (!contactKey) return;
@@ -61,6 +66,7 @@ export function useChatSession(token: string) {
       if (event.type === "conversation") store.upsertConversation(event.data);
       if (event.type === "conversation_removed") store.removeConversation(event.data.id);
       if (event.type === "presence") store.setPresence(event.data.user_id, event.data.online);
+      if (event.type === "friends_changed") useFriendsStore.getState().load();
     },
     onOpen(reconnected) {
       const store = useChatStore.getState();
@@ -71,6 +77,7 @@ export function useChatSession(token: string) {
       // While disconnected we missed events: reload everything that was on screen.
       if (reconnected) {
         listConversations().then(store.setConversations, showError);
+        useFriendsStore.getState().load();
         store.clearThreads();
         if (store.selectedId !== null) store.loadThread(store.selectedId);
       }

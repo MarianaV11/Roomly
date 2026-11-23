@@ -28,4 +28,5 @@ export type ChatEvent =
   | { type: "conversation"; data: Conversation }
   /** You left the conversation (possibly from another tab). */
   | { type: "conversation_removed"; data: { id: number } }
-  | { type: "presence"; data: { user_id: number; online: boolean } };
+  | { type: "presence"; data: { user_id: number; online: boolean } }
+  | { type: "friends_changed"; data: null };

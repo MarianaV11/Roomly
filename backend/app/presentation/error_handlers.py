@@ -5,6 +5,8 @@ from app.domain.exceptions import (
     ConversationNotFound,
     DomainError,
     EmailAlreadyRegistered,
+    FriendshipAlreadyExists,
+    FriendshipNotFound,
     InvalidCredentials,
     UserNotFound,
     InvalidToken,
@@ -16,6 +18,8 @@ STATUS_BY_ERROR = {
     InvalidToken: status.HTTP_401_UNAUTHORIZED,
     UserNotFound: status.HTTP_404_NOT_FOUND,
     ConversationNotFound: status.HTTP_404_NOT_FOUND,
+    FriendshipNotFound: status.HTTP_404_NOT_FOUND,
+    FriendshipAlreadyExists: status.HTTP_409_CONFLICT,
 }
 
 

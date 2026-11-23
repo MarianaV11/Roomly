@@ -6,6 +6,7 @@ from app.core import get_config
 from app.presentation.auth_router import router as auth_router
 from app.presentation.chat_router import router as chat_router
 from app.presentation.error_handlers import register_error_handlers
+from app.presentation.friend_router import router as friend_router
 from app.presentation.user_router import router as user_router
 
 
@@ -32,6 +33,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
     app.include_router(user_router, prefix="/api/user", tags=["User"])
     app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
+    app.include_router(friend_router, prefix="/api/friends", tags=["Friends"])
 
     return app
 

@@ -12,10 +12,71 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { UserAvatar, type User } from "@/features/users";
+import { cn } from "@/lib/utils";
 
+import { DeleteAccountDialog } from "./delete-account-dialog";
 import { ThemeSwitch } from "./theme-switch";
 
-export function SettingsDialog() {
+function Group({
+  id,
+  title,
+  danger,
+  children,
+}: {
+  id: string;
+  title: string;
+  danger?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section aria-labelledby={id} className="flex flex-col gap-2">
+      <h3
+        id={id}
+        className={cn(
+          "text-xs font-medium tracking-wide uppercase",
+          danger ? "text-destructive" : "text-muted-foreground",
+        )}
+      >
+        {title}
+      </h3>
+      <div className={cn("divide-y rounded-lg border", danger && "border-destructive/30")}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function Row({
+  title,
+  description,
+  htmlFor,
+  children,
+}: {
+  title: string;
+  description: React.ReactNode;
+  htmlFor?: string;
+  children: React.ReactNode;
+}) {
+  const Text = htmlFor ? "label" : "div";
+
+  return (
+    <div className="flex items-center justify-between gap-4 p-3">
+      <Text htmlFor={htmlFor} className={cn("flex min-w-0 flex-col", htmlFor && "cursor-pointer")}>
+        <span className="text-sm font-medium">{title}</span>
+        <span className="text-xs text-muted-foreground">{description}</span>
+      </Text>
+      {children}
+    </div>
+  );
+}
+
+type Props = {
+  me: User | null;
+  onAccountDeleted: () => void;
+};
+
+export function SettingsDialog({ me, onAccountDeleted }: Props) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const followsSystem = theme === "system";
 
@@ -32,36 +93,56 @@ export function SettingsDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Configurações</DialogTitle>
-          <DialogDescription>Personalize o Roomly neste navegador.</DialogDescription>
+          <DialogDescription>Personalize o Roomly e gerencie sua conta.</DialogDescription>
         </DialogHeader>
 
-        <section aria-labelledby="appearance-title" className="flex flex-col gap-3">
-          <h3 id="appearance-title" className="text-xs font-medium text-muted-foreground uppercase">
-            Aparência
-          </h3>
-
-          <div className="flex items-center justify-between gap-4 rounded-lg border p-3">
-            <label htmlFor="theme-switch" className="flex cursor-pointer flex-col">
-              <span className="text-sm font-medium">Tema</span>
-              <span className="text-xs text-muted-foreground">
-                {resolvedTheme === "dark" ? "Escuro" : "Claro"}
-                {followsSystem && " · seguindo o sistema"}
-              </span>
-            </label>
-            <ThemeSwitch id="theme-switch" />
-          </div>
-
-          {!followsSystem && (
-            <Button
-              variant="link"
-              size="sm"
-              className="self-start px-0 motion-safe:animate-in motion-safe:fade-in"
-              onClick={() => setTheme("system")}
-            >
-              Voltar a seguir o tema do sistema
-            </Button>
+        <div className="flex flex-col gap-5">
+          {me && (
+            <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
+              <UserAvatar name={me.name} size="lg" />
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate font-medium">{me.name}</span>
+                <span className="truncate text-sm text-muted-foreground">{me.email}</span>
+              </div>
+            </div>
           )}
-        </section>
+
+          <Group id="appearance-title" title="Aparência">
+            <Row
+              title="Tema escuro"
+              description={resolvedTheme === "dark" ? "Ativado" : "Desativado"}
+              htmlFor="theme-switch"
+            >
+              <ThemeSwitch id="theme-switch" />
+            </Row>
+            <Row
+              title="Seguir o sistema"
+              description={
+                followsSystem
+                  ? "O tema muda junto com o do seu dispositivo."
+                  : "Você escolheu um tema fixo neste navegador."
+              }
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={followsSystem}
+                onClick={() => setTheme("system")}
+              >
+                {followsSystem ? "Ativo" : "Usar"}
+              </Button>
+            </Row>
+          </Group>
+
+          <Group id="danger-title" title="Zona de perigo" danger>
+            <Row
+              title="Excluir conta"
+              description="Apaga sua conta, mensagens e amizades para sempre."
+            >
+              <DeleteAccountDialog onDeleted={onAccountDeleted} />
+            </Row>
+          </Group>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -16,3 +16,7 @@ export async function findUserByEmail(email: string): Promise<User> {
   const { data } = await axios.get<User>("/user/search", { params: { email } });
   return data;
 }
+
+export async function deleteMe(): Promise<void> {
+  await axios.delete("/user/me");
+}
