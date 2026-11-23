@@ -88,6 +88,22 @@ async def join_group(
     return await _publish_conversation(conversation)
 
 
+@router.post("/conversations/{conversation_id}/leave", status_code=status.HTTP_204_NO_CONTENT)
+async def leave_group(
+    conversation_id: int,
+    user_id: int = Depends(get_current_user_id),
+    chat_service: ChatService = Depends(get_chat_service),
+) -> None:
+    remaining = await chat_service.leave_group(conversation_id=conversation_id, user_id=user_id)
+
+    # The leaver's other tabs drop it; whoever stays sees the shorter member list.
+    await connections.send(
+        [user_id], {"type": "conversation_removed", "data": {"id": conversation_id}}
+    )
+    if remaining is not None:
+        await _publish_conversation(remaining)
+
+
 @router.post("/conversations/{conversation_id}/members", response_model=ConversationResponse)
 async def add_members(
     conversation_id: int,

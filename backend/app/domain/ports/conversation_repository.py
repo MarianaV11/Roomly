@@ -20,6 +20,9 @@ class ConversationRepository(ABC):
     async def add_members(self, conversation_id: int, user_ids: list[int]) -> Conversation: ...
 
     @abstractmethod
+    async def remove_member(self, conversation_id: int, user_id: int) -> Conversation | None: ...
+
+    @abstractmethod
     async def add_message(self, message: Message) -> Message: ...
 
     @abstractmethod

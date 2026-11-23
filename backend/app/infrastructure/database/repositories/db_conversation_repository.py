@@ -68,6 +68,22 @@ class DbConversationRepository(ConversationRepository):
 
         return self._to_conversation(model)
 
+    async def remove_member(self, conversation_id: int, user_id: int) -> Conversation | None:
+        model = await self._session.get(ConversationModel, conversation_id)
+
+        # delete-orphan on the relationship deletes the membership row.
+        model.members = [m for m in model.members if m.user_id != user_id]
+
+        if not model.members:
+            # Last one out: drop the conversation (its messages go with it, ON DELETE CASCADE).
+            await self._session.delete(model)
+            await self._session.commit()
+            return None
+
+        await self._session.commit()
+
+        return self._to_conversation(model)
+
     async def add_message(self, message: Message) -> Message:
         model = MessageModel(
             conversation_id=message.conversation_id,

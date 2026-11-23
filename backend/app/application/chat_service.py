@@ -72,17 +72,23 @@ class ChatService:
 
         return await self._conversations.add_members(conversation_id, new_members)
 
+    async def leave_group(self, conversation_id: int, user_id: int) -> Conversation | None:
+        conversation = await self._get_as_member(conversation_id, user_id)
+
+        if not conversation.is_group:
+            raise InvalidConversation("You can't leave a direct conversation")
+
+        return await self._conversations.remove_member(conversation_id, user_id)
+
     async def list_conversations(self, user_id: int) -> list[Conversation]:
         return await self._conversations.list_user_conversations(user_id=user_id)
 
     async def list_contact_ids(self, user_id: int) -> list[int]:
-        """Everyone who shares at least one conversation with the user."""
         conversations = await self._conversations.list_user_conversations(user_id=user_id)
 
         return sorted({m for c in conversations for m in c.member_ids} - {user_id})
 
     async def online_contacts(self, user_id: int, user_ids: list[int]) -> list[int]:
-        # Only contacts' presence is visible, so strangers can't track who is online.
         contacts = set(await self.list_contact_ids(user_id))
 
         return await self._sessions.filter_online(sorted(contacts & set(user_ids)))
