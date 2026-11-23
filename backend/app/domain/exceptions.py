@@ -19,3 +19,14 @@ class UserNotFound(DomainError):
 class InvalidCredentials(DomainError):
     def __init__(self) -> None:
         super().__init__("Invalid email or password")
+
+
+class ConversationNotFound(DomainError):
+    def __init__(self, conversation_id: int) -> None:
+        self.conversation_id = conversation_id
+
+        super().__init__(f"Conversation not found: {conversation_id}")
+
+
+class InvalidConversation(DomainError):
+    pass

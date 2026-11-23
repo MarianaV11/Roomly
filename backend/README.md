@@ -79,6 +79,44 @@ A documentação interativa fica em <http://localhost:9000/api/docs>.
 3. No `/api/docs`, clique em **Authorize** e cole o token.
 4. As rotas protegidas, como `GET /api/user/me`, passam a funcionar.
 
+## Chat
+
+Há dois tipos de conversa (campo `is_group`):
+
+- **Direta:** sempre exatamente duas pessoas. Abrir uma DM com quem você já conversa devolve a existente.
+- **Grupo:** tem nome e é **público**: qualquer pessoa pode encontrar e entrar. Pode ser criado só com quem criou, e qualquer membro pode adicionar outras pessoas.
+
+Todas as rotas exigem login.
+
+| Rota | O que faz |
+|---|---|
+| `POST /api/chat/conversations/direct` | Abre a DM com alguém: `{"user_id": 2}` |
+| `POST /api/chat/conversations/groups` | Cria um grupo: `{"name": "Café", "member_ids": []}` (membros opcionais) |
+| `GET /api/chat/conversations/groups?search=café` | Busca grupos pelo nome (vazio = mais recentes) |
+| `POST /api/chat/conversations/{id}/join` | Entra num grupo |
+| `POST /api/chat/conversations/{id}/members` | Adiciona pessoas a um grupo de que você participa: `{"member_ids": [3, 4]}` |
+| `GET /api/chat/conversations` | Lista as conversas do usuário logado |
+| `GET /api/chat/conversations/{id}/messages` | Últimas 50 mensagens. Para carregar as anteriores: `?before_id=<id da mais antiga>` |
+| `POST /api/chat/conversations/{id}/messages` | Envia `{"content": "..."}` |
+| `GET /api/chat/online?user_ids=1&user_ids=2` | Quais desses usuários estão online, por exemplo `[2]`. Só responde sobre contatos (quem divide uma conversa com você); até 100 ids. |
+
+Para receber eventos em tempo real, o frontend abre um WebSocket. Navegadores não permitem cabeçalhos no WebSocket, por isso o token vai na URL:
+
+```js
+const ws = new WebSocket(`ws://localhost:9000/api/chat/ws?token=${accessToken}`);
+ws.onmessage = (e) => {
+  const { type, data } = JSON.parse(e.data);
+  // "message"      → data = mensagem nova
+  // "conversation" → data = conversa nova ou atualizada (alguém entrou/foi adicionado):
+  //                  trate como "insere ou substitui" pelo id
+  // "presence"     → data = { user_id, online } quando um contato entra ou sai
+};
+```
+
+O envio continua sendo pelo `POST`. O WebSocket só entrega eventos.
+
+**Presença:** enquanto o WebSocket está aberto, o usuário fica online, numa chave `online:{id}` do Redis que expira em 60s e é renovada a cada 30s. Se o servidor cair, ninguém fica preso como online: a chave expira sozinha. O fluxo no frontend é chamar `GET /online` ao abrir a tela, para saber o estado inicial, e depois atualizar com os eventos `presence`.
+
 ## Migrations
 
 Depois de alterar um model em `app/infrastructure/database/models/`, gere e aplique uma migration nova:

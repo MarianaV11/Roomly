@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 from app.domain.exceptions import (
+    ConversationNotFound,
     DomainError,
     EmailAlreadyRegistered,
     InvalidCredentials,
@@ -12,6 +13,7 @@ STATUS_BY_ERROR = {
     EmailAlreadyRegistered: status.HTTP_409_CONFLICT,
     InvalidCredentials: status.HTTP_401_UNAUTHORIZED,
     UserNotFound: status.HTTP_404_NOT_FOUND,
+    ConversationNotFound: status.HTTP_404_NOT_FOUND,
 }
 
 
