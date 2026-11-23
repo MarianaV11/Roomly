@@ -1,0 +1,210 @@
+/* Hand-drawn button, adapted from uiverse.io (styled-components → CSS Module).
+   Changes from the original: theme colors (works in dark mode), position: relative
+   (the highlight stays inside the button), disabled/focus states, reduced motion. */
+
+.button {
+  --ink: var(--foreground);
+  --ink-soft: color-mix(in oklch, var(--foreground) 40%, transparent);
+  --marker: color-mix(in oklch, var(--primary) 45%, transparent);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  padding: 0.5em 1.2em;
+  border-width: 0;
+  border-radius: 2rem;
+  background-color: transparent;
+  color: var(--ink);
+  font-family: "Courier New", monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+  box-shadow: var(--ink-soft) 3px 3px 0 1px;
+  filter: url(#handDrawnNoise);
+  transition: 0.3s ease-in-out;
+  animation: idle 1s infinite ease-in-out;
+}
+
+.highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--marker);
+  stroke: var(--marker); /* highlighter, in the theme color */
+  stroke-width: 10;
+  stroke-linecap: round;
+  pointer-events: none;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 0.5s ease-in-out;
+}
+
+.cosm {
+  position: absolute;
+  left: 0;
+  fill: var(--ink-soft);
+  width: 88px;
+  height: 88px;
+  scale: 0.5;
+  translate: calc(-100% + 16px) 1rem;
+  transition: 0.3s ease-out;
+}
+
+.button:hover:not(:disabled) {
+  rotate: -2.5deg;
+  animation: hover 2.5s infinite ease-in-out;
+}
+
+.button:hover:not(:disabled) .highlight {
+  stroke-dashoffset: 0;
+}
+
+.button:hover:not(:disabled) .cosm {
+  rotate: -15deg;
+  translate: calc(-100% + 15px) 1.3rem;
+}
+
+.button:active:not(:disabled) {
+  rotate: -2.5deg;
+  box-shadow: inset var(--ink) 3px 3px 0 1px;
+  animation: active 1s infinite ease-in-out;
+}
+
+.button:active:not(:disabled) .highlight {
+  stroke: #bc4e2666;
+  stroke-dashoffset: 1000;
+  animation:
+    highlight 5s infinite,
+    col 0.5s forwards;
+}
+
+.button:active:not(:disabled) .cosm {
+  fill: var(--ink);
+  rotate: -135deg;
+  translate: calc(-100% + 38px) 1.1rem;
+  animation: none;
+}
+
+/* Not in the original: form states. */
+.button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.6;
+  animation: none;
+}
+
+@keyframes idle {
+  0% {
+    filter: url(#handDrawnNoise);
+  }
+  50% {
+    rotate: 2.5deg;
+    filter: url(#handDrawnNoise2);
+  }
+  100% {
+    filter: url(#handDrawnNoise);
+  }
+}
+
+@keyframes hover {
+  0% {
+    rotate: 0deg;
+    filter: url(#handDrawnNoise);
+    translate: 0 0;
+  }
+  25% {
+    rotate: -1deg;
+    filter: url(#handDrawnNoise2);
+    translate: 0 -2px;
+  }
+  50% {
+    rotate: 0deg;
+    filter: url(#handDrawnNoise);
+    translate: 0 2px;
+  }
+  75% {
+    rotate: -1deg;
+    filter: url(#handDrawnNoise2);
+    translate: 0 -2px;
+  }
+  100% {
+    rotate: 0deg;
+    filter: url(#handDrawnNoise);
+    translate: 0 0;
+  }
+}
+
+@keyframes active {
+  0% {
+    filter: url(#handDrawnNoiset);
+    translate: 0 -1px;
+  }
+  25% {
+    rotate: -3deg;
+  }
+  50% {
+    filter: url(#handDrawnNoiset2);
+    translate: 0 1px;
+  }
+  66% {
+    rotate: 1.5deg;
+  }
+  100% {
+    filter: url(#handDrawnNoiset);
+    translate: 0 -1px;
+  }
+}
+
+@keyframes highlight {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  25%,
+  50% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes col {
+  0% {
+    stroke: var(--marker);
+  }
+  100% {
+    stroke: #1c98eb66;
+  }
+}
+
+/* "Reduce motion": keep the look, drop the wobbling. */
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .button:hover:not(:disabled),
+  .button:active:not(:disabled),
+  .button:active:not(:disabled) .highlight {
+    animation: none;
+  }
+  .button,
+  .highlight,
+  .cosm {
+    transition: none;
+  }
+}
+
+/* The SVG holding the noise filters must exist but take no space. */
+.filters {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
