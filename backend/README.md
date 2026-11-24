@@ -55,6 +55,7 @@ uv run python -c "import secrets; print(secrets.token_urlsafe(32))"
 | `JWT_ALGORITHM` | Algoritmo do JWT | `HS256` |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | Opcional. Validade do token, em minutos | `60` |
 | `CORS_ORIGINS` | Opcional. Origens liberadas para o frontend | `["http://localhost:3000"]` |
+| `CORS_ORIGIN_REGEX` | Opcional, para testar no celular. Libera origens por regex | `^http://(10\.\d+\|172\.(1[6-9]\|2\d\|3[01])\|192\.168)\.\d+\.\d+:3001$` |
 
 O `.env` está no `.gitignore`. Nunca faça commit dele.
 
@@ -113,12 +114,32 @@ ws.onmessage = (e) => {
   // "conversation_removed" → data = { id } quando você sai de um grupo (avisa suas outras abas)
   // "presence"     → data = { user_id, online } quando um contato (conversa ou amigo) entra ou sai
   // "friends_changed" → data = null quando um pedido/amizade seu muda (recarregue GET /api/friends)
+  // "call_state"   → data = { conversation_id, participant_ids } quando alguém entra/sai de uma chamada
+  // "call_signal"  → data = { conversation_id, from, payload } sinal WebRTC vindo de outro participante
+  // "call_ended"   → data = { conversation_id } a chamada continuou em outra aba sua
+  // "error"        → data = { detail } um evento enviado por você foi recusado
 };
 ```
 
 O envio continua sendo pelo `POST`. O WebSocket só entrega eventos.
 
 **Presença:** enquanto o WebSocket está aberto, o usuário fica online, numa chave `online:{id}` do Redis que expira em 60s e é renovada a cada 30s. Se o servidor cair, ninguém fica preso como online: a chave expira sozinha. O fluxo no frontend é chamar `GET /online` ao abrir a tela, para saber o estado inicial, e depois atualizar com os eventos `presence`.
+
+## Chamadas de voz e tela
+
+Chamadas funcionam em qualquer conversa (grupo ou direta), só entre membros. O áudio e a tela vão direto entre os navegadores (WebRTC); o backend só guarda quem está em cada chamada e repassa os sinais pelo WebSocket. Cada pessoa fica em uma chamada por vez; se fechar a aba, sai dela.
+
+Eventos que o cliente envia pelo WebSocket:
+
+```js
+ws.send(JSON.stringify({ type: "call_join", data: { conversation_id: 1 } }));
+ws.send(JSON.stringify({ type: "call_leave", data: { conversation_id: 1 } }));
+ws.send(JSON.stringify({ type: "call_signal", data: { conversation_id: 1, to: 2, payload: { description } } })); // ou { candidate }
+```
+
+`GET /api/chat/calls` lista as chamadas em andamento nas suas conversas (útil ao abrir a tela).
+
+Limites: cada participante manda áudio para todos os outros (malha), o que funciona bem até umas 6 pessoas. O estado das chamadas fica na memória do processo, então a API precisa rodar com um único worker (como já acontece com o WebSocket). Em redes muito restritas, configure um servidor TURN em `NEXT_PUBLIC_ICE_SERVERS` no frontend.
 
 ## Amizade
 

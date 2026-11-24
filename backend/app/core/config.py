@@ -15,6 +15,8 @@ class Config(BaseSettings):
     jwt_access_token_expire_minutes: int = 60
 
     cors_origins: list[str] = ["http://localhost:3000"]
+    # Dev only: e.g. any LAN IP on port 3001, to open the app from a phone.
+    cors_origin_regex: str | None = None
 
     echo: bool = True
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { RiArrowLeftLine, RiChat3Line, RiWifiOffLine } from "@remixicon/react";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ExitButton } from "@/components/exit-button";
@@ -14,6 +15,7 @@ import { useChatSession } from "../hooks/use-chat-session";
 import { conversationTitle, memberCountLabel, otherMemberIds } from "../lib/conversation";
 import { useChatStore } from "../store/chat.store";
 import { AddMembersDialog } from "./add-members-dialog";
+import { CallAudio, CallBar, CallButton, CallStage } from "./call-panel";
 import { ConversationList } from "./conversation-list";
 import { ExploreGroupsDialog } from "./explore-groups-dialog";
 import { FriendsDialog } from "./friends-dialog";
@@ -30,9 +32,33 @@ export function ChatView({ token }: { token: string }) {
   const online = useChatStore((state) => state.online);
   const connected = useChatStore((state) => state.connected);
   const select = useChatStore((state) => state.select);
+  const selectedId = useChatStore((state) => state.selectedId);
   const selected = useChatStore(
     (state) => state.conversations.find((c) => c.id === state.selectedId) ?? null,
   );
+
+  // An open conversation is a history entry, so the phone's back button/gesture
+  // returns to the list instead of leaving the app.
+  useEffect(() => {
+    const onPopState = (event: PopStateEvent) => select(event.state?.conversationId ?? null);
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [select]);
+
+  useEffect(() => {
+    const inHistory = window.history.state?.conversationId ?? null;
+    if (selectedId === null || selectedId === inHistory) return;
+
+    // Keeps Next.js' own router state, which lives in history.state too.
+    const state = { ...window.history.state, conversationId: selectedId };
+    if (inHistory === null) window.history.pushState(state, "");
+    else window.history.replaceState(state, "");
+  }, [selectedId]);
+
+  function closeConversation() {
+    if (window.history.state?.conversationId) window.history.back();
+    else select(null);
+  }
 
   function logout() {
     useChatStore.getState().reset();
@@ -50,7 +76,7 @@ export function ChatView({ token }: { token: string }) {
       <aside
         className={cn("w-full flex-col border-r md:flex md:w-80", selected ? "hidden" : "flex")}
       >
-        <header className="flex items-center gap-1 border-b p-3">
+        <header className="flex h-16 shrink-0 items-center gap-1 border-b px-3">
           {me && <UserAvatar name={me.name} />}
           <div className="ml-1 flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-medium">{me?.name ?? "…"}</span>
@@ -72,7 +98,9 @@ export function ChatView({ token }: { token: string }) {
           <ConversationList />
         </nav>
 
-        <footer className="border-t p-2">
+        <CallBar />
+
+        <footer className="flex h-14 shrink-0 items-center border-t px-2">
           <SettingsDialog me={me} onAccountDeleted={logout} />
         </footer>
       </aside>
@@ -84,13 +112,13 @@ export function ChatView({ token }: { token: string }) {
             key={selected.id}
             className="flex min-h-0 flex-1 flex-col motion-safe:animate-in motion-safe:duration-300 motion-safe:fade-in motion-safe:slide-in-from-right-4 md:motion-safe:slide-in-from-right-0"
           >
-            <header className="flex items-center gap-3 border-b p-3">
+            <header className="flex h-16 shrink-0 items-center gap-3 border-b px-3">
               <Button
                 variant="ghost"
                 size="icon"
                 className="md:hidden"
                 aria-label="Voltar"
-                onClick={() => select(null)}
+                onClick={closeConversation}
               >
                 <RiArrowLeftLine />
               </Button>
@@ -109,6 +137,7 @@ export function ChatView({ token }: { token: string }) {
                       : "offline"}
                 </span>
               </div>
+              <CallButton conversationId={selected.id} />
               {selected.is_group && (
                 <>
                   <AddMembersDialog groupName={title} />
@@ -117,6 +146,7 @@ export function ChatView({ token }: { token: string }) {
               )}
             </header>
 
+            <CallStage conversationId={selected.id} />
             <MessageList showSenderNames={selected.is_group} />
             <MessageComposer />
           </div>
@@ -127,6 +157,8 @@ export function ChatView({ token }: { token: string }) {
           </div>
         )}
       </main>
+
+      <CallAudio />
     </div>
   );
 }

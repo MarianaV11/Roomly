@@ -24,7 +24,7 @@ export function MessageComposer() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 border-t p-3">
+    <form onSubmit={handleSubmit} className="flex h-14 shrink-0 items-center gap-2 border-t px-3">
       <Input
         value={content}
         onChange={(event) => setContent(event.target.value)}

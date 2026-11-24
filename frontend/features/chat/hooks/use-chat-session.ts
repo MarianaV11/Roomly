@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo } from "react";
 
+import { listActiveCalls, setCallSender, useCallStore } from "@/features/call";
 import { useFriendsStore } from "@/features/friends";
 import { getMe } from "@/features/users";
 
+import { announceCall } from "../lib/call";
 import { listConversations, listOnline } from "../services/chat.service";
 import { showError, useChatStore } from "../store/chat.store";
 import { useChatSocket } from "./use-chat-socket";
@@ -58,7 +60,7 @@ export function useChatSession(token: string) {
   }, [contactKey]);
 
   // ---- real time ------------------------------------------------------------
-  useChatSocket(token, {
+  const send = useChatSocket(token, {
     onEvent(event) {
       const store = useChatStore.getState();
 
@@ -67,12 +69,30 @@ export function useChatSession(token: string) {
       if (event.type === "conversation_removed") store.removeConversation(event.data.id);
       if (event.type === "presence") store.setPresence(event.data.user_id, event.data.online);
       if (event.type === "friends_changed") useFriendsStore.getState().load();
+
+      const call = useCallStore.getState();
+      if (event.type === "call_state") {
+        announceCall(event.data);
+        call.applyState(event.data);
+      }
+      if (event.type === "call_signal") {
+        call.handleSignal(event.data.conversation_id, event.data.from, event.data.payload);
+      }
+      if (event.type === "call_ended") {
+        call.end(event.data.conversation_id, "A chamada continuou em outra aba.");
+      }
+      if (event.type === "conversation_removed") call.end(event.data.id);
+      if (event.type === "error") {
+        if (call.joining) call.joinFailed(event.data.detail);
+        else showError(new Error(event.data.detail));
+      }
     },
     onOpen(reconnected) {
       const store = useChatStore.getState();
 
       store.setConnected(true);
       onlineAmong(contactKey).then(store.setOnline, showError);
+      listActiveCalls().then(useCallStore.getState().setActive, showError);
 
       // While disconnected we missed events: reload everything that was on screen.
       if (reconnected) {
@@ -84,6 +104,15 @@ export function useChatSession(token: string) {
     },
     onClose() {
       useChatStore.getState().setConnected(false);
+      useCallStore.getState().disconnected();
     },
   });
+
+  useEffect(() => {
+    setCallSender(send);
+    return () => {
+      useCallStore.getState().leave();
+      setCallSender(() => {});
+    };
+  }, [send]);
 }

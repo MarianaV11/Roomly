@@ -1,4 +1,11 @@
 from app.presentation.schemas.auth import LoginRequest, TokenResponse
+from app.presentation.schemas.call import (
+    CallJoin,
+    CallLeave,
+    CallSignal,
+    CallState,
+    ClientEvent,
+)
 from app.presentation.schemas.chat import (
     ConversationResponse,
     DirectCreate,
@@ -11,6 +18,11 @@ from app.presentation.schemas.friend import FriendRequestCreate, FriendshipRespo
 from app.presentation.schemas.user import UserCreate, UserResponse
 
 __all__ = [
+    "CallJoin",
+    "CallLeave",
+    "CallSignal",
+    "CallState",
+    "ClientEvent",
     "LoginRequest",
     "TokenResponse",
     "DirectCreate",

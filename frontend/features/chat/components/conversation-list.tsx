@@ -1,8 +1,12 @@
 "use client";
 
+import { RiPhoneFill } from "@remixicon/react";
+
+import { useCallStore } from "@/features/call";
 import { UserAvatar } from "@/features/users";
 import { cn } from "@/lib/utils";
 
+import { peopleLabel } from "../lib/call";
 import { conversationTitle, memberCountLabel, otherMemberIds } from "../lib/conversation";
 import { useChatStore } from "../store/chat.store";
 
@@ -14,6 +18,7 @@ export function ConversationList() {
   const online = useChatStore((state) => state.online);
   const unread = useChatStore((state) => state.unread);
   const select = useChatStore((state) => state.select);
+  const activeCalls = useCallStore((state) => state.active);
 
   if (conversations.length === 0) {
     return (
@@ -31,6 +36,7 @@ export function ConversationList() {
         const onlineCount = others.filter((id) => online.has(id)).length;
         const isUnread = unread.has(conversation.id);
         const isSelected = conversation.id === selectedId;
+        const inCall = activeCalls[conversation.id] ?? [];
 
         return (
           // New conversations slide in; the key keeps existing rows from re-animating.
@@ -60,8 +66,20 @@ export function ConversationList() {
                     {memberCountLabel(conversation.member_ids.length)} · {onlineCount} online
                   </span>
                 )}
+                {inCall.length > 0 && (
+                  <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs motion-safe:animate-in motion-safe:fade-in">
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-medium text-emerald-700 dark:text-emerald-300">
+                      <RiPhoneFill className="size-3 motion-safe:animate-pulse" aria-hidden />
+                      {peopleLabel(inCall.length)} na chamada
+                    </span>
+                    <span className="truncate text-muted-foreground">
+                      {inCall
+                        .map((id) => (id === meId ? "Você" : (users[id]?.name ?? "…")))
+                        .join(", ")}
+                    </span>
+                  </span>
+                )}
               </span>
-
               {isUnread && (
                 <span
                   className="size-2 shrink-0 rounded-full bg-primary motion-safe:animate-in motion-safe:zoom-in"

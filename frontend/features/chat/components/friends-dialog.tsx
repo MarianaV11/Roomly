@@ -5,6 +5,7 @@ import {
   RiChat3Line,
   RiCheckLine,
   RiCloseLine,
+  RiPhoneLine,
   RiUserAddLine,
   RiUserHeartLine,
   RiUserUnfollowLine,
@@ -25,6 +26,7 @@ import {
 import { useFriendsStore, type Friendship } from "@/features/friends";
 import { UserAvatar } from "@/features/users";
 
+import { joinCall } from "../lib/call";
 import { directSchema, type DirectValues } from "../schemas/conversation.schema";
 import { useChatStore } from "../store/chat.store";
 
@@ -113,9 +115,13 @@ export function FriendsDialog() {
     setBusyId(null);
   }
 
-  async function chatWith(friendship: Friendship) {
+  async function chatWith(friendship: Friendship, call = false) {
     setBusyId(friendship.id);
-    if (await openDirect(friendship.user.email)) setOpen(false);
+    if (await openDirect(friendship.user.email)) {
+      setOpen(false);
+      const conversationId = useChatStore.getState().selectedId;
+      if (call && conversationId !== null) await joinCall(conversationId);
+    }
     setBusyId(null);
   }
 
@@ -180,6 +186,15 @@ export function FriendsDialog() {
                 {online.has(f.user.id) && (
                   <span className="text-xs text-emerald-600 dark:text-emerald-400">online</span>
                 )}
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label={`Ligar para ${f.user.name}`}
+                  disabled={busyId === f.id}
+                  onClick={() => chatWith(f, true)}
+                >
+                  <RiPhoneLine />
+                </Button>
                 <Button
                   size="icon-sm"
                   variant="ghost"

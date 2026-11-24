@@ -86,7 +86,7 @@ export function SettingsDialog({ me, onAccountDeleted }: Props) {
         render={<Button variant="ghost" className="w-full justify-start gap-2 px-2" />}
       >
         {/* The gear turns a bit on hover. */}
-        <RiSettings3Line className="transition-transform duration-500 group-hover/button:rotate-90 motion-reduce:transition-none" />
+        <RiSettings3Line className="text-primary transition-transform duration-500 group-hover/button:rotate-90 motion-reduce:transition-none" />
         Configurações
       </DialogTrigger>
 

@@ -1,3 +1,5 @@
+import type { ActiveCall, SignalPayload } from "@/features/call";
+
 export type Conversation = {
   id: number;
   /** Always set for groups; null for direct conversations. */
@@ -29,4 +31,8 @@ export type ChatEvent =
   /** You left the conversation (possibly from another tab). */
   | { type: "conversation_removed"; data: { id: number } }
   | { type: "presence"; data: { user_id: number; online: boolean } }
-  | { type: "friends_changed"; data: null };
+  | { type: "friends_changed"; data: null }
+  | { type: "call_state"; data: ActiveCall }
+  | { type: "call_signal"; data: { conversation_id: number; from: number; payload: SignalPayload } }
+  | { type: "call_ended"; data: { conversation_id: number } }
+  | { type: "error"; data: { detail: string } };

@@ -124,6 +124,16 @@ class ChatService:
             conversation_id=conversation_id, before_id=before_id, limit=limit
         )
 
+    async def get_member_ids(self, conversation_id: int, user_id: int) -> list[int]:
+        conversation = await self._get_as_member(conversation_id, user_id)
+
+        return conversation.member_ids
+
+    async def member_ids(self, conversation_id: int) -> list[int]:
+        conversation = await self._conversations.get_conversation(conversation_id)
+
+        return conversation.member_ids if conversation is not None else []
+
     async def _ensure_users_exist(self, user_ids: list[int]) -> None:
         for user_id in user_ids:
             if await self._users.get_user_by_id(user_id=user_id) is None:

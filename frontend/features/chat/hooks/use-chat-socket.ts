@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef } from "react";
 
 import { WS_BASE_URL } from "@/services/env.service";
 
@@ -20,6 +20,7 @@ export function useChatSocket(token: string, handlers: Handlers) {
   const onEvent = useEffectEvent(handlers.onEvent);
   const onOpen = useEffectEvent(handlers.onOpen);
   const onClose = useEffectEvent(handlers.onClose);
+  const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     let socket: WebSocket;
@@ -29,6 +30,7 @@ export function useChatSocket(token: string, handlers: Handlers) {
 
     const connect = () => {
       socket = new WebSocket(`${WS_BASE_URL}/api/chat/ws?token=${encodeURIComponent(token)}`);
+      socketRef.current = socket;
 
       socket.onopen = () => onOpen(opens++ > 0);
       socket.onmessage = (message) => onEvent(JSON.parse(message.data) as ChatEvent);
@@ -46,4 +48,10 @@ export function useChatSocket(token: string, handlers: Handlers) {
       socket.close();
     };
   }, [token]);
+
+  // Dropped while disconnected: whatever was being sent belongs to a call that ended.
+  return useCallback((event: object) => {
+    const socket = socketRef.current;
+    if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(event));
+  }, []);
 }
