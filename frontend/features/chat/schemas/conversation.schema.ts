@@ -32,6 +32,11 @@ export const addMembersSchema = z.object({
   emails: emailList(1),
 });
 
+export const groupPasswordSchema = z.object({
+  password: z.string().min(4, "Mínimo de 4 caracteres").max(128, "Máximo de 128 caracteres"),
+});
+
+export type GroupPasswordValues = z.infer<typeof groupPasswordSchema>;
 export type DirectValues = z.infer<typeof directSchema>;
 export type GroupInput = z.input<typeof groupSchema>;
 export type GroupValues = z.output<typeof groupSchema>;

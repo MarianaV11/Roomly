@@ -2,10 +2,10 @@ import type { ActiveCall, SignalPayload } from "@/features/call";
 
 export type Conversation = {
   id: number;
-  /** Always set for groups; null for direct conversations. */
   name: string | null;
-  /** Groups are public (anyone can find and join) and can grow; direct = exactly 2 people. */
   is_group: boolean;
+  owner_id: number | null;
+  has_password: boolean;
   member_ids: number[];
   created_at: string;
 };
@@ -24,11 +24,9 @@ export type Thread = {
   loading: boolean;
 };
 
-/** What the backend pushes over the WebSocket (see backend README, "Chat"). */
 export type ChatEvent =
   | { type: "message"; data: Message }
   | { type: "conversation"; data: Conversation }
-  /** You left the conversation (possibly from another tab). */
   | { type: "conversation_removed"; data: { id: number } }
   | { type: "presence"; data: { user_id: number; online: boolean } }
   | { type: "friends_changed"; data: null }

@@ -25,6 +25,8 @@ from app.presentation.schemas import (
     ConversationResponse,
     DirectCreate,
     GroupCreate,
+    GroupJoin,
+    GroupPasswordSet,
     MembersAdd,
     MessageCreate,
     MessageResponse,
@@ -92,10 +94,28 @@ async def search_groups(
 @router.post("/conversations/{conversation_id}/join", response_model=ConversationResponse)
 async def join_group(
     conversation_id: int,
+    payload: GroupJoin | None = None,
     user_id: int = Depends(get_current_user_id),
     chat_service: ChatService = Depends(get_chat_service),
 ):
-    conversation = await chat_service.join_group(conversation_id=conversation_id, user_id=user_id)
+    conversation = await chat_service.join_group(
+        conversation_id=conversation_id,
+        user_id=user_id,
+        password=payload.password if payload else None,
+    )
+    return await _publish_conversation(conversation)
+
+
+@router.put("/conversations/{conversation_id}/password", response_model=ConversationResponse)
+async def set_group_password(
+    conversation_id: int,
+    payload: GroupPasswordSet,
+    user_id: int = Depends(get_current_user_id),
+    chat_service: ChatService = Depends(get_chat_service),
+):
+    conversation = await chat_service.set_group_password(
+        conversation_id=conversation_id, actor_id=user_id, password=payload.password
+    )
     return await _publish_conversation(conversation)
 
 

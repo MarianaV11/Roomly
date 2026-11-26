@@ -1,8 +1,15 @@
 from app.domain.entities.conversation import Conversation, Message
-from app.domain.exceptions import ConversationNotFound, InvalidConversation, UserNotFound
+from app.domain.exceptions import (
+    ConversationNotFound,
+    InvalidConversation,
+    NotGroupOwner,
+    UserNotFound,
+    WrongGroupPassword,
+)
 from app.domain.ports import (
     ConversationRepository,
     FriendRepository,
+    PasswordHasher,
     SessionRepository,
     UserRepository,
 )
@@ -15,11 +22,13 @@ class ChatService:
         user_repository: UserRepository,
         session_repository: SessionRepository,
         friend_repository: FriendRepository,
+        password_hasher: PasswordHasher,
     ):
         self._conversations = conversation_repository
         self._users = user_repository
         self._sessions = session_repository
         self._friends = friend_repository
+        self._hasher = password_hasher
 
     async def open_direct(self, user_id: int, other_id: int) -> Conversation:
         """The direct conversation between two people; reused if it already exists."""
@@ -39,18 +48,19 @@ class ChatService:
     async def create_group(
         self, creator_id: int, name: str, member_ids: list[int]
     ) -> Conversation:
-        # Groups are public, so starting alone and letting people join is fine.
         members = sorted(set(member_ids) | {creator_id})
         await self._ensure_users_exist(members)
 
         return await self._conversations.create_conversation(
-            Conversation(member_ids=members, name=name, is_group=True)
+            Conversation(member_ids=members, name=name, is_group=True, owner_id=creator_id)
         )
 
     async def search_groups(self, search: str, limit: int) -> list[Conversation]:
         return await self._conversations.search_groups(search=search, limit=limit)
 
-    async def join_group(self, conversation_id: int, user_id: int) -> Conversation:
+    async def join_group(
+        self, conversation_id: int, user_id: int, password: str | None
+    ) -> Conversation:
         conversation = await self._conversations.get_conversation(conversation_id)
 
         if conversation is None or not conversation.is_group:
@@ -58,6 +68,11 @@ class ChatService:
 
         if user_id in conversation.member_ids:
             return conversation
+
+        if conversation.password_hash is not None and not self._hasher.verify(
+            password or "", conversation.password_hash
+        ):
+            raise WrongGroupPassword()
 
         return await self._conversations.add_members(conversation_id, [user_id])
 
@@ -78,6 +93,18 @@ class ChatService:
         await self._ensure_users_exist(new_members)
 
         return await self._conversations.add_members(conversation_id, new_members)
+
+    async def set_group_password(
+        self, conversation_id: int, actor_id: int, password: str | None
+    ) -> Conversation:
+        conversation = await self._get_as_member(conversation_id, actor_id)
+
+        if not conversation.is_group or conversation.owner_id != actor_id:
+            raise NotGroupOwner()
+
+        password_hash = self._hasher.hash(password) if password else None
+
+        return await self._conversations.set_password_hash(conversation_id, password_hash)
 
     async def leave_group(self, conversation_id: int, user_id: int) -> Conversation | None:
         conversation = await self._get_as_member(conversation_id, user_id)

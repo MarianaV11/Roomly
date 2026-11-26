@@ -125,6 +125,16 @@ O envio continua sendo pelo `POST`. O WebSocket só entrega eventos.
 
 **Presença:** enquanto o WebSocket está aberto, o usuário fica online, numa chave `online:{id}` do Redis que expira em 60s e é renovada a cada 30s. Se o servidor cair, ninguém fica preso como online: a chave expira sozinha. O fluxo no frontend é chamar `GET /online` ao abrir a tela, para saber o estado inicial, e depois atualizar com os eventos `presence`.
 
+## Senha nos grupos
+
+Quem cria o grupo é o dono (`owner_id`). Só o dono pode colocar, trocar ou tirar a senha:
+
+```
+PUT /api/chat/conversations/{id}/password   { "password": "segredo" }   // null remove
+```
+
+Com senha, `POST /api/chat/conversations/{id}/join` precisa de `{ "password": "..." }` (senha errada → 403). Quem já é membro não é afetado, e quem está no grupo ainda pode adicionar pessoas sem senha. A resposta da conversa traz `has_password`; o hash nunca sai da API. Se o dono sai, o membro com menor id vira dono.
+
 ## Chamadas de voz e tela
 
 Chamadas funcionam em qualquer conversa (grupo ou direta), só entre membros. O áudio e a tela vão direto entre os navegadores (WebRTC); o backend só guarda quem está em cada chamada e repassa os sinais pelo WebSocket. Cada pessoa fica em uma chamada por vez; se fechar a aba, sai dela.

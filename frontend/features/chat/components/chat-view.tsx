@@ -19,6 +19,7 @@ import { CallAudio, CallBar, CallButton, CallStage } from "./call-panel";
 import { ConversationList } from "./conversation-list";
 import { ExploreGroupsDialog } from "./explore-groups-dialog";
 import { FriendsDialog } from "./friends-dialog";
+import { GroupPasswordDialog } from "./group-password-dialog";
 import { LeaveGroupDialog } from "./leave-group-dialog";
 import { MessageComposer } from "./message-composer";
 import { MessageList } from "./message-list";
@@ -141,6 +142,9 @@ export function ChatView({ token }: { token: string }) {
               {selected.is_group && (
                 <>
                   <AddMembersDialog groupName={title} />
+                  {selected.owner_id === me?.id && (
+                    <GroupPasswordDialog groupName={title} hasPassword={selected.has_password} />
+                  )}
                   <LeaveGroupDialog groupName={title} isLastMember={others.length === 0} />
                 </>
               )}

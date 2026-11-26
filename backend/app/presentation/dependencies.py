@@ -79,6 +79,7 @@ def _build_chat_service(session: AsyncSession) -> ChatService:
         user_repository=DbUserRepository(session=session),
         session_repository=get_session_repository(),
         friend_repository=DbFriendRepository(session=session),
+        password_hasher=Argon2PasswordHasher(),
     )
 
 

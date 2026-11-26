@@ -23,6 +23,11 @@ class ConversationRepository(ABC):
     async def remove_member(self, conversation_id: int, user_id: int) -> Conversation | None: ...
 
     @abstractmethod
+    async def set_password_hash(
+        self, conversation_id: int, password_hash: str | None
+    ) -> Conversation: ...
+
+    @abstractmethod
     async def add_message(self, message: Message) -> Message: ...
 
     @abstractmethod

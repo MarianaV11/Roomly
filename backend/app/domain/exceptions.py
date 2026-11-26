@@ -37,6 +37,16 @@ class InvalidConversation(DomainError):
     pass
 
 
+class NotGroupOwner(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Only the group owner can do this")
+
+
+class WrongGroupPassword(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Wrong group password")
+
+
 class FriendshipNotFound(DomainError):
     def __init__(self, friendship_id: int) -> None:
         self.friendship_id = friendship_id

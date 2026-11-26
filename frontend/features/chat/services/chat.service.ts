@@ -32,8 +32,22 @@ export async function searchGroups(search: string): Promise<Conversation[]> {
   return data;
 }
 
-export async function joinGroup(conversationId: number): Promise<Conversation> {
-  const { data } = await axios.post<Conversation>(`/chat/conversations/${conversationId}/join`);
+export async function joinGroup(conversationId: number, password?: string): Promise<Conversation> {
+  const { data } = await axios.post<Conversation>(`/chat/conversations/${conversationId}/join`, {
+    password,
+  });
+  return data;
+}
+
+/** Owner only. null removes the password. */
+export async function setGroupPassword(
+  conversationId: number,
+  password: string | null,
+): Promise<Conversation> {
+  const { data } = await axios.put<Conversation>(
+    `/chat/conversations/${conversationId}/password`,
+    { password },
+  );
   return data;
 }
 

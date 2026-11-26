@@ -47,7 +47,8 @@ type ChatState = {
   send: (content: string) => Promise<boolean>;
   openDirect: (email: string) => Promise<boolean>;
   createGroup: (name: string, emails: string[]) => Promise<boolean>;
-  joinGroup: (conversationId: number) => Promise<boolean>;
+  joinGroup: (conversationId: number, password?: string) => Promise<boolean>;
+  setGroupPassword: (password: string | null) => Promise<boolean>;
   addMembers: (emails: string[]) => Promise<boolean>;
   leaveGroup: () => Promise<boolean>;
 };
@@ -232,8 +233,16 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       );
     }),
 
-  joinGroup: (conversationId) =>
-    attempt(async () => enter(await chatService.joinGroup(conversationId))),
+  joinGroup: (conversationId, password) =>
+    attempt(async () => enter(await chatService.joinGroup(conversationId, password))),
+
+  setGroupPassword: (password) =>
+    attempt(async () => {
+      const { selectedId, upsertConversation } = get();
+      if (selectedId === null) return;
+
+      upsertConversation(await chatService.setGroupPassword(selectedId, password));
+    }),
 
   addMembers: (emails) =>
     attempt(async () => {

@@ -8,6 +8,8 @@ from app.domain.exceptions import (
     FriendshipAlreadyExists,
     FriendshipNotFound,
     InvalidCredentials,
+    NotGroupOwner,
+    WrongGroupPassword,
     UserNotFound,
     InvalidToken,
 )
@@ -20,6 +22,8 @@ STATUS_BY_ERROR = {
     ConversationNotFound: status.HTTP_404_NOT_FOUND,
     FriendshipNotFound: status.HTTP_404_NOT_FOUND,
     FriendshipAlreadyExists: status.HTTP_409_CONFLICT,
+    NotGroupOwner: status.HTTP_403_FORBIDDEN,
+    WrongGroupPassword: status.HTTP_403_FORBIDDEN,
 }
 
 

@@ -1,5 +1,5 @@
 from app.infrastructure.database.database import Base
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, false
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, false
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -11,9 +11,11 @@ class Conversation(Base):
     name = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
 
-    # Direct conversation (False): always exactly two people.
-    # Group (True): has a name, is public (anyone can find and join it) and can grow.
     is_group = Column(Boolean, nullable=False, default=False, server_default=false(), index=True)
+
+
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    password_hash = Column(String, nullable=True)
 
     members = relationship(
         "ConversationMember",

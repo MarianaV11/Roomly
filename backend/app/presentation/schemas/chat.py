@@ -19,12 +19,25 @@ class MembersAdd(BaseModel):
     member_ids: list[int] = Field(min_length=1, max_length=100)
 
 
+GroupPassword = Annotated[str, StringConstraints(min_length=4, max_length=128)]
+
+
+class GroupJoin(BaseModel):
+    password: str | None = Field(default=None, max_length=128)
+
+
+class GroupPasswordSet(BaseModel):
+    password: GroupPassword | None
+
+
 class ConversationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     name: str | None
     is_group: bool
+    owner_id: int | None
+    has_password: bool
     member_ids: list[int]
     created_at: datetime
 

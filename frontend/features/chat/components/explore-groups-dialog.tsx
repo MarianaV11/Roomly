@@ -1,6 +1,6 @@
 "use client";
 
-import { RiCompass3Line, RiLoader4Line, RiSearchLine } from "@remixicon/react";
+import { RiCompass3Line, RiLoader4Line, RiLockLine, RiSearchLine } from "@remixicon/react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,9 @@ export function ExploreGroupsDialog() {
   const [results, setResults] = useState<Conversation[] | null>(null);
   const [joiningId, setJoiningId] = useState<number | null>(null);
 
+  const [askingId, setAskingId] = useState<number | null>(null);
+  const [password, setPassword] = useState("");
+
   // Search while the dialog is open, waiting for the user to stop typing.
   useEffect(() => {
     if (!open) return;
@@ -56,8 +59,14 @@ export function ExploreGroupsDialog() {
       return;
     }
 
+    if (group.has_password && askingId !== group.id) {
+      setAskingId(group.id);
+      setPassword("");
+      return;
+    }
+
     setJoiningId(group.id);
-    if (await joinGroup(group.id)) setOpen(false);
+    if (await joinGroup(group.id, group.has_password ? password : undefined)) setOpen(false);
     setJoiningId(null);
   }
 
@@ -70,7 +79,9 @@ export function ExploreGroupsDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Explorar grupos</DialogTitle>
-          <DialogDescription>Todos os grupos são públicos. Entre em qualquer um.</DialogDescription>
+          <DialogDescription>
+            Entre em qualquer grupo. Os com cadeado pedem senha.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="relative">
@@ -101,29 +112,59 @@ export function ExploreGroupsDialog() {
             <ul className="flex flex-col gap-1">
               {results.map((group, index) => {
                 const isMember = meId !== undefined && group.member_ids.includes(meId);
+                const asking = !isMember && askingId === group.id;
 
                 return (
                   <li
                     key={group.id}
-                    className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted motion-safe:animate-in motion-safe:fill-mode-backwards motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
+                    className="flex flex-wrap items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted motion-safe:animate-in motion-safe:fill-mode-backwards motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
                     // Stagger: each row starts a little after the previous one.
                     style={{ animationDelay: `${Math.min(index, 10) * 30}ms` }}
                   >
                     <UserAvatar name={group.name ?? "Grupo"} />
                     <div className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate text-sm font-medium">{group.name}</span>
+                      <span className="flex items-center gap-1 truncate text-sm font-medium">
+                        {group.name}
+                        {group.has_password && (
+                          <RiLockLine className="size-3.5 shrink-0 text-muted-foreground" aria-label="Com senha" />
+                        )}
+                      </span>
                       <span className="text-xs text-muted-foreground">
                         {memberCountLabel(group.member_ids.length)}
                       </span>
                     </div>
-                    <Button
-                      size="sm"
-                      variant={isMember ? "outline" : "default"}
-                      disabled={joiningId !== null}
-                      onClick={() => handleOpenGroup(group, isMember)}
-                    >
-                      {joiningId === group.id ? "Entrando…" : isMember ? "Abrir" : "Entrar"}
-                    </Button>
+                    {!asking && (
+                      <Button
+                        size="sm"
+                        variant={isMember ? "outline" : "default"}
+                        disabled={joiningId !== null}
+                        onClick={() => handleOpenGroup(group, isMember)}
+                      >
+                        {joiningId === group.id ? "Entrando…" : isMember ? "Abrir" : "Entrar"}
+                      </Button>
+                    )}
+                    {asking && (
+                      <form
+                        className="flex w-full gap-2 motion-safe:animate-in motion-safe:fade-in"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          handleOpenGroup(group, false);
+                        }}
+                      >
+                        <Input
+                          type="password"
+                          value={password}
+                          onChange={(event) => setPassword(event.target.value)}
+                          placeholder="Senha do grupo"
+                          aria-label={`Senha de ${group.name}`}
+                          maxLength={128}
+                          autoFocus
+                        />
+                        <Button size="sm" type="submit" disabled={joiningId !== null || !password}>
+                          {joiningId === group.id ? "Entrando…" : "Entrar"}
+                        </Button>
+                      </form>
+                    )}
                   </li>
                 );
               })}

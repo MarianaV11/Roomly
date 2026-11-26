@@ -16,6 +16,7 @@ class DbConversationRepository(ConversationRepository):
         model = ConversationModel(
             name=conversation.name,
             is_group=conversation.is_group,
+            owner_id=conversation.owner_id,
             members=[MemberModel(user_id=user_id) for user_id in conversation.member_ids],
         )
 
@@ -80,6 +81,19 @@ class DbConversationRepository(ConversationRepository):
             await self._session.commit()
             return None
 
+        if model.owner_id == user_id:
+            model.owner_id = min(m.user_id for m in model.members)
+
+        await self._session.commit()
+
+        return self._to_conversation(model)
+
+    async def set_password_hash(
+        self, conversation_id: int, password_hash: str | None
+    ) -> Conversation:
+        model = await self._session.get(ConversationModel, conversation_id)
+        model.password_hash = password_hash
+
         await self._session.commit()
 
         return self._to_conversation(model)
@@ -122,6 +136,8 @@ class DbConversationRepository(ConversationRepository):
             id=model.id,
             name=model.name,
             is_group=model.is_group,
+            owner_id=model.owner_id,
+            password_hash=model.password_hash,
             member_ids=sorted(member.user_id for member in model.members),
             created_at=model.created_at,
         )
