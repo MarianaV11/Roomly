@@ -25,7 +25,7 @@ function describe(error: AxiosError<{ detail?: FastApiDetail }>): string {
 
 const axios = Axios.create({
   baseURL: `${BASE_URL}/api`,
-  timeout: 15000,
+  timeout: 90000,
   headers: { "Content-Type": "application/json" },
 });
 
