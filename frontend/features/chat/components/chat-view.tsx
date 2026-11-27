@@ -24,6 +24,7 @@ import { CallAudio, CallBar, CallButton, CallStage } from "./call-panel";
 import { ConversationList } from "./conversation-list";
 import { ExploreGroupsDialog } from "./explore-groups-dialog";
 import { FriendsDialog } from "./friends-dialog";
+import { GroupMembersDialog } from "./group-members-dialog";
 import { GroupPasswordDialog } from "./group-password-dialog";
 import { LeaveGroupDialog } from "./leave-group-dialog";
 import { MessageComposer } from "./message-composer";
@@ -132,22 +133,32 @@ export function ChatView({ token }: { token: string }) {
               >
                 <RiArrowLeftLine />
               </Button>
-              <UserAvatar
-                name={title}
-                src={conversationAvatar(selected, me?.id, users)}
-                group={selected.is_group}
-                online={!selected.is_group && onlineOthers.length > 0}
-              />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <h1 className="truncate text-sm font-medium">{title}</h1>
-                <span className="text-xs text-muted-foreground">
-                  {selected.is_group
-                    ? `${memberCountLabel(selected.member_ids.length)} · ${onlineOthers.length} online`
-                    : onlineOthers.length
-                      ? "online"
-                      : "offline"}
-                </span>
-              </div>
+              {selected.is_group ? (
+                <GroupMembersDialog conversation={selected} title={title}>
+                  <UserAvatar name={title} group />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <h1 className="truncate text-sm font-medium">{title}</h1>
+                    <span className="text-xs text-muted-foreground">
+                      {memberCountLabel(selected.member_ids.length)} · {onlineOthers.length} online
+                      · ver participantes
+                    </span>
+                  </div>
+                </GroupMembersDialog>
+              ) : (
+                <>
+                  <UserAvatar
+                    name={title}
+                    src={conversationAvatar(selected, me?.id, users)}
+                    online={onlineOthers.length > 0}
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <h1 className="truncate text-sm font-medium">{title}</h1>
+                    <span className="text-xs text-muted-foreground">
+                      {onlineOthers.length ? "online" : "offline"}
+                    </span>
+                  </div>
+                </>
+              )}
               <CallButton conversationId={selected.id} />
               {selected.is_group && (
                 <>
