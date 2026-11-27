@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/features/users";
 import { formatMessageTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
@@ -47,38 +48,46 @@ export function MessageList({ showSenderNames }: { showSenderNames: boolean }) {
       {thread.items.map((message, index) => {
         const mine = message.sender_id === meId;
         const firstOfRun = thread.items[index - 1]?.sender_id !== message.sender_id;
+        const sender = users[message.sender_id];
 
         return (
           <div
             key={message.id}
             className={cn(
-              "flex max-w-[80%] flex-col motion-safe:animate-in motion-safe:duration-200 motion-safe:fade-in",
+              "flex max-w-[85%] items-start gap-2 motion-safe:animate-in motion-safe:duration-200 motion-safe:fade-in",
               // Mine come in from the right, theirs from the left.
               mine
-                ? "items-end self-end motion-safe:slide-in-from-right-4"
+                ? "flex-row-reverse self-end motion-safe:slide-in-from-right-4"
                 : "self-start motion-safe:slide-in-from-left-4",
               firstOfRun && "mt-2",
             )}
           >
-            {showSenderNames && !mine && firstOfRun && (
-              <span className="mb-0.5 px-1 text-xs text-muted-foreground">
-                {users[message.sender_id]?.name ?? "…"}
-              </span>
+            {firstOfRun ? (
+              <UserAvatar name={sender?.name ?? "…"} src={sender?.avatar_url} />
+            ) : (
+              <span className="w-8 shrink-0" aria-hidden />
             )}
-            <div
-              className={cn(
-                "rounded-2xl px-3 py-1.5 text-sm break-words whitespace-pre-wrap",
-                mine ? "bg-primary text-primary-foreground" : "bg-muted",
+            <div className={cn("flex min-w-0 flex-col", mine && "items-end")}>
+              {showSenderNames && !mine && firstOfRun && (
+                <span className="mb-0.5 px-1 text-xs text-muted-foreground">
+                  {sender?.name ?? "…"}
+                </span>
               )}
-            >
-              {message.content}
+              <div
+                className={cn(
+                  "rounded-2xl px-3 py-1.5 text-sm break-words whitespace-pre-wrap",
+                  mine ? "bg-primary text-primary-foreground" : "bg-muted",
+                )}
+              >
+                {message.content}
+              </div>
+              <time
+                className="px-1 text-[0.7rem] text-muted-foreground"
+                dateTime={message.created_at}
+              >
+                {formatMessageTime(message.created_at)}
+              </time>
             </div>
-            <time
-              className="px-1 text-[0.7rem] text-muted-foreground"
-              dateTime={message.created_at}
-            >
-              {formatMessageTime(message.created_at)}
-            </time>
           </div>
         );
       })}
