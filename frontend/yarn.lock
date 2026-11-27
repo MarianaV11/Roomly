@@ -3556,6 +3556,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"frimousse@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "frimousse@npm:0.4.0"
+  peerDependencies:
+    react: ^18 || ^19
+    typescript: ">=5.1.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/5793a3098f8b1ff17d16f59109c9da7486837e999d5b52305890d4eef6f787f9452746175c33717aab2b6b4e3f178d6e9f0f6ca6d3aa213b46edddfce09cff21
+  languageName: node
+  linkType: hard
+
 "frontend@workspace:.":
   version: 0.0.0-use.local
   resolution: "frontend@workspace:."
@@ -3573,6 +3586,7 @@ __metadata:
     date-fns: "npm:^4.4.0"
     eslint: "npm:^9"
     eslint-config-next: "npm:16.3.4"
+    frimousse: "npm:^0.4.0"
     next: "npm:16.3.4"
     next-themes: "npm:^0.4.6"
     prettier: "npm:^3.10.1"
