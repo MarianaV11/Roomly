@@ -4,6 +4,7 @@ from app.domain.ports.user_repository import UserRepository
 from app.domain.ports.session_repository import SessionRepository
 from app.domain.ports.conversation_repository import ConversationRepository
 from app.domain.ports.friend_repository import FriendRepository
+from app.domain.ports.image_repository import ImageRepository
 
 __all__ = [
     "PasswordHasher",
@@ -12,4 +13,5 @@ __all__ = [
     "SessionRepository",
     "ConversationRepository",
     "FriendRepository",
+    "ImageRepository",
 ]

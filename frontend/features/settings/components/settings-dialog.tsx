@@ -16,6 +16,7 @@ import { UserAvatar, type User } from "@/features/users";
 import { cn } from "@/lib/utils";
 
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { ProfilePhoto } from "./profile-photo";
 import { ThemeSwitch } from "./theme-switch";
 
 function Group({
@@ -73,10 +74,11 @@ function Row({
 
 type Props = {
   me: User | null;
+  onProfileChange: (me: User) => void;
   onAccountDeleted: () => void;
 };
 
-export function SettingsDialog({ me, onAccountDeleted }: Props) {
+export function SettingsDialog({ me, onProfileChange, onAccountDeleted }: Props) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const followsSystem = theme === "system";
 
@@ -99,12 +101,20 @@ export function SettingsDialog({ me, onAccountDeleted }: Props) {
         <div className="flex flex-col gap-5">
           {me && (
             <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
-              <UserAvatar name={me.name} size="lg" />
+              <UserAvatar name={me.name} src={me.avatar_url} size="lg" />
               <div className="flex min-w-0 flex-col">
                 <span className="truncate font-medium">{me.name}</span>
                 <span className="truncate text-sm text-muted-foreground">{me.email}</span>
               </div>
             </div>
+          )}
+
+          {me && (
+            <Group id="profile-title" title="Perfil">
+              <Row title="Foto de perfil" description="JPG, PNG ou WebP (com ajuste), ou GIF até 10 MB.">
+                <ProfilePhoto me={me} onChange={onProfileChange} />
+              </Row>
+            </Group>
           )}
 
           <Group id="appearance-title" title="Aparência">

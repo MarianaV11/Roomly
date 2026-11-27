@@ -47,6 +47,20 @@ class WrongGroupPassword(DomainError):
         super().__init__("Wrong group password")
 
 
+class InvalidImage(DomainError):
+    pass
+
+
+class ImageTooLarge(DomainError):
+    def __init__(self, max_bytes: int) -> None:
+        super().__init__(f"Image is too large; the limit is {max_bytes // (1024 * 1024)} MB")
+
+
+class ImageNotFound(DomainError):
+    def __init__(self) -> None:
+        super().__init__("This user has no profile picture")
+
+
 class FriendshipNotFound(DomainError):
     def __init__(self, friendship_id: int) -> None:
         self.friendship_id = friendship_id

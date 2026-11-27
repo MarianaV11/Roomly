@@ -31,6 +31,7 @@ type ChatState = {
 
   reset: () => void;
   start: (me: User, conversations: Conversation[]) => void;
+  updateMe: (me: User) => void;
   setConnected: (connected: boolean) => void;
   setConversations: (conversations: Conversation[]) => void;
   upsertConversation: (conversation: Conversation) => void;
@@ -78,6 +79,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
   start: (me, conversations) =>
     set((state) => ({ me, conversations, users: { ...state.users, [me.id]: me } })),
+
+  updateMe: (me) => set((state) => ({ me, users: { ...state.users, [me.id]: me } })),
 
   setConnected: (connected) => set({ connected }),
 

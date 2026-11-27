@@ -17,6 +17,17 @@ export function conversationTitle(
   return names.join(", ") || "Conversa";
 }
 
+// Groups have no picture; a direct conversation shows the other person's.
+export function conversationAvatar(
+  conversation: Conversation,
+  meId: number | undefined,
+  users: Record<number, User>,
+): string | null {
+  if (conversation.is_group) return null;
+  const [other] = otherMemberIds(conversation, meId);
+  return users[other]?.avatar_url ?? null;
+}
+
 export function memberCountLabel(count: number): string {
   return count === 1 ? "1 membro" : `${count} membros`;
 }

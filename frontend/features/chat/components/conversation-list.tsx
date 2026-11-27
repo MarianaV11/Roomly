@@ -7,7 +7,12 @@ import { UserAvatar } from "@/features/users";
 import { cn } from "@/lib/utils";
 
 import { peopleLabel } from "../lib/call";
-import { conversationTitle, memberCountLabel, otherMemberIds } from "../lib/conversation";
+import {
+  conversationAvatar,
+  conversationTitle,
+  memberCountLabel,
+  otherMemberIds,
+} from "../lib/conversation";
 import { useChatStore } from "../store/chat.store";
 
 export function ConversationList() {
@@ -55,6 +60,7 @@ export function ConversationList() {
             >
               <UserAvatar
                 name={title}
+                src={conversationAvatar(conversation, meId, users)}
                 online={!conversation.is_group && onlineCount > 0}
                 group={conversation.is_group}
               />

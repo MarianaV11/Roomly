@@ -64,6 +64,7 @@ class DbUserRepository(UserRepository):
             email=model.email,
             password_hash=model.password_hash,
             created_at=model.created_at,
+            avatar_updated_at=model.avatar_updated_at,
         )
 
     @classmethod

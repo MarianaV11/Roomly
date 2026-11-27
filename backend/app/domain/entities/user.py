@@ -10,3 +10,4 @@ class User:
 
     id: int | None = None
     created_at: datetime | None = None
+    avatar_updated_at: datetime | None = None

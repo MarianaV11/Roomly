@@ -7,6 +7,8 @@ from app.domain.exceptions import (
     EmailAlreadyRegistered,
     FriendshipAlreadyExists,
     FriendshipNotFound,
+    ImageNotFound,
+    ImageTooLarge,
     InvalidCredentials,
     NotGroupOwner,
     WrongGroupPassword,
@@ -23,6 +25,8 @@ STATUS_BY_ERROR = {
     FriendshipNotFound: status.HTTP_404_NOT_FOUND,
     FriendshipAlreadyExists: status.HTTP_409_CONFLICT,
     NotGroupOwner: status.HTTP_403_FORBIDDEN,
+    ImageNotFound: status.HTTP_404_NOT_FOUND,
+    ImageTooLarge: status.HTTP_413_CONTENT_TOO_LARGE,
     WrongGroupPassword: status.HTTP_403_FORBIDDEN,
 }
 

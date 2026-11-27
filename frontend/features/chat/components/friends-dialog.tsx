@@ -80,7 +80,7 @@ function Section({
             key={friendship.id}
             className="flex items-center gap-3 rounded-lg px-2 py-1.5 motion-safe:animate-in motion-safe:fade-in"
           >
-            <UserAvatar name={friendship.user.name} size="sm" />
+            <UserAvatar name={friendship.user.name} src={friendship.user.avatar_url} size="sm" />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-sm">{friendship.user.name}</span>
               <span className="truncate text-xs text-muted-foreground">

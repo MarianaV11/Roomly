@@ -12,7 +12,12 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/auth.store";
 
 import { useChatSession } from "../hooks/use-chat-session";
-import { conversationTitle, memberCountLabel, otherMemberIds } from "../lib/conversation";
+import {
+  conversationAvatar,
+  conversationTitle,
+  memberCountLabel,
+  otherMemberIds,
+} from "../lib/conversation";
 import { useChatStore } from "../store/chat.store";
 import { AddMembersDialog } from "./add-members-dialog";
 import { CallAudio, CallBar, CallButton, CallStage } from "./call-panel";
@@ -78,7 +83,7 @@ export function ChatView({ token }: { token: string }) {
         className={cn("w-full flex-col border-r md:flex md:w-80", selected ? "hidden" : "flex")}
       >
         <header className="flex h-16 shrink-0 items-center gap-1 border-b px-3">
-          {me && <UserAvatar name={me.name} />}
+          {me && <UserAvatar name={me.name} src={me.avatar_url} />}
           <div className="ml-1 flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-medium">{me?.name ?? "…"}</span>
             {!connected && (
@@ -102,7 +107,11 @@ export function ChatView({ token }: { token: string }) {
         <CallBar />
 
         <footer className="flex h-14 shrink-0 items-center border-t px-2">
-          <SettingsDialog me={me} onAccountDeleted={logout} />
+          <SettingsDialog
+            me={me}
+            onProfileChange={useChatStore.getState().updateMe}
+            onAccountDeleted={logout}
+          />
         </footer>
       </aside>
 
@@ -125,6 +134,7 @@ export function ChatView({ token }: { token: string }) {
               </Button>
               <UserAvatar
                 name={title}
+                src={conversationAvatar(selected, me?.id, users)}
                 group={selected.is_group}
                 online={!selected.is_group && onlineOthers.length > 0}
               />

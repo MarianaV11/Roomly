@@ -205,7 +205,7 @@ export function CallStage({ conversationId }: { conversationId: number }) {
               <div
                 className={cn("rounded-full", connecting && "opacity-50 motion-safe:animate-pulse")}
               >
-                <UserAvatar name={name(id)} size="lg" />
+                <UserAvatar name={name(id)} src={users[id]?.avatar_url} size="lg" />
               </div>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 {isMe ? "Você" : name(id)}

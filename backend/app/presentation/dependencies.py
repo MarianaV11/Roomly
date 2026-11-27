@@ -16,6 +16,7 @@ from app.infrastructure.database.database import SessionLocal, get_db_session
 from app.infrastructure.database.repositories import (
     DbConversationRepository,
     DbFriendRepository,
+    DbImageRepository,
     DbUserRepository,
 )
 from app.infrastructure.redis import RedisSessionRepository, get_redis_client
@@ -59,7 +60,10 @@ async def get_current_user_id(user: User = Depends(get_current_user)) -> int:
 
 
 def get_user_service(session: AsyncSession = Depends(get_db_session)) -> UserService:
-    return UserService(user_repository=DbUserRepository(session=session))
+    return UserService(
+        user_repository=DbUserRepository(session=session),
+        image_repository=DbImageRepository(session=session),
+    )
 
 
 def get_friend_service(session: AsyncSession = Depends(get_db_session)) -> FriendService:
